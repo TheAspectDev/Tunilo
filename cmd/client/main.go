@@ -81,9 +81,10 @@ func forwardRequest(conn net.Conn, req *http.Request) {
 		log.Printf("Failed to serialize HTTP response: %v", err)
 		return
 	}
+	fmt.Println(localResp.StatusCode)
 
 	protocol.Write(conn, protocol.Message{
-		Type:    protocol.MsgRequest,
+		Type:    protocol.MsgResponse,
 		Payload: RequestBuffer.Bytes(),
 	})
 

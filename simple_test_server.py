@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def index():
-    return '<button onclick="fetch(`/echo`, {method: `post`, body: {}})">heck</button>'
+    return '<button onclick="fetch(`/echo`, {method: `post`, body: {}})">heck</button>', 500
 
 @app.route("/echo", methods=["POST"])
 def echo():
