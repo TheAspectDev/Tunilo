@@ -35,15 +35,37 @@ func (srv *Server) StartControlServer() {
 func (srv *Server) initClient(conn net.Conn) {
 	if err := waitForClientReady(conn); err != nil {
 		conn.Close()
-		fmt.Println("Handshake failed:", err)
 		return
 	}
 
-	fmt.Println("Client ready")
+	log.Println("client ready")
 
 	srv.clientMu.Lock()
 	srv.client = conn
 	srv.clientMu.Unlock()
+
+	go srv.tunnelReader(conn)
+}
+
+func (srv *Server) tunnelReader(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+
+	for {
+		msg, err := protocol.Read(reader)
+		if err != nil {
+			return
+		}
+
+		if msg.Type == protocol.MsgResponse {
+			srv.pendingMu.Lock()
+			ch := srv.pending[msg.RequestID]
+			srv.pendingMu.Unlock()
+
+			if ch != nil {
+				ch <- msg.Payload
+			}
+		}
+	}
 }
 
 func waitForClientReady(conn net.Conn) error {

@@ -27,12 +27,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	err = protocol.Write(conn, protocol.Message{
+	protocol.Write(conn, protocol.Message{
 		Type:      protocol.MsgReady,
 		RequestID: 0,
 	})
-
-	fmt.Println(err)
 
 	for {
 		msg, err := protocol.Read(conn)
@@ -49,13 +47,13 @@ func main() {
 				log.Println("error processing request")
 			}
 
-			forwardRequest(conn, request)
+			forwardRequest(conn, request, msg.RequestID)
 		}
 
 	}
 }
 
-func forwardRequest(conn net.Conn, req *http.Request) {
+func forwardRequest(conn net.Conn, req *http.Request, req_id uint64) {
 	forwardData := strings.Split(FORWARD_ADDRESS, "://")
 
 	// something.com
@@ -84,11 +82,11 @@ func forwardRequest(conn net.Conn, req *http.Request) {
 		log.Printf("Failed to serialize HTTP response: %v", err)
 		return
 	}
-	fmt.Println(localResp.StatusCode)
 
 	protocol.Write(conn, protocol.Message{
-		Type:    protocol.MsgResponse,
-		Payload: RequestBuffer.Bytes(),
+		Type:      protocol.MsgResponse,
+		RequestID: req_id,
+		Payload:   RequestBuffer.Bytes(),
 	})
 
 }

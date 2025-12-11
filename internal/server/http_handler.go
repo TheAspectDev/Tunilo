@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/TheAspectDev/tunio/internal/protocol"
 )
@@ -24,37 +25,47 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	protocol.Write(clientConn, protocol.Message{
-		Type:    protocol.MsgRequest,
-		Payload: RequestBuffer.Bytes(),
+	id := atomic.AddUint64(&srv.counter, 1)
+
+	respChan := make(chan []byte, 1)
+
+	srv.pendingMu.Lock()
+	srv.pending[id] = respChan
+	srv.pendingMu.Unlock()
+
+	srv.writeMu.Lock()
+
+	// todo
+	_ = protocol.Write(clientConn, protocol.Message{
+		Type:      protocol.MsgRequest,
+		RequestID: id,
+		Payload:   RequestBuffer.Bytes(),
 	})
+	srv.writeMu.Unlock()
 
-	msg, err := protocol.Read(clientConn)
+	payload := <-respChan
 
-	if msg.Type == protocol.MsgResponse {
-		if err != nil {
-			fmt.Println("error reading response", err)
-			return
-		}
+	srv.pendingMu.Lock()
+	delete(srv.pending, id)
+	srv.pendingMu.Unlock()
 
-		reader := bufio.NewReader(bytes.NewReader(msg.Payload))
-		response, err := http.ReadResponse(reader, r)
+	reader := bufio.NewReader(bytes.NewReader(payload))
+	response, err := http.ReadResponse(reader, r)
 
-		if err != nil {
-			log.Printf("error parsing response %v", err)
-			return
-		}
+	if err != nil {
+		log.Printf("error parsing response %v", err)
+		return
+	}
 
-		fmt.Println(response.Status)
+	fmt.Println(response.Status)
 
-		CopyResponseHeaders(w, response)
-		w.WriteHeader(response.StatusCode)
+	CopyResponseHeaders(w, response)
+	w.WriteHeader(response.StatusCode)
 
-		_, err = io.Copy(w, response.Body)
+	_, err = io.Copy(w, response.Body)
 
-		if err != nil {
-			log.Printf("Error streaming response body: %v", err)
-			return
-		}
+	if err != nil {
+		log.Printf("Error streaming response body: %v", err)
+		return
 	}
 }
