@@ -15,6 +15,7 @@ const (
 )
 
 type Message struct {
-	Type    Type
-	Payload []byte
+	Type      Type
+	RequestID uint64
+	Payload   []byte
 }
