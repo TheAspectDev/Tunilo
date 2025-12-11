@@ -28,21 +28,22 @@ func (srv *Server) StartControlServer() {
 			log.Println("Error accepting client:", err)
 			continue
 		}
-		go handleClient(conn)
+		go srv.initClient(conn)
 	}
 }
 
-func handleClient(conn net.Conn) error {
+func (srv *Server) initClient(conn net.Conn) {
 	if err := waitForClientReady(conn); err != nil {
-		(conn).Close()
-		log.Println(err)
-		return err
+		conn.Close()
+		fmt.Println("Handshake failed:", err)
+		return
 	}
 
-	fmt.Println("client ready")
+	fmt.Println("Client ready")
 
-	return nil
-
+	srv.clientMu.Lock()
+	srv.client = conn
+	srv.clientMu.Unlock()
 }
 
 func waitForClientReady(conn net.Conn) error {

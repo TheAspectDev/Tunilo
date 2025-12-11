@@ -6,10 +6,18 @@ import (
 )
 
 // FULLY WRITTEN MESSAGE
-// [MESSAGE_TYPE MESSAGE_LENGTH PAYLOAD]
+// [MESSAGE_TYPE REQUEST_ID MESSAGE_LENGTH PAYLOAD]
 func Write(w io.Writer, msg Message) error {
 	// Write TYPE
 	_, err := w.Write([]byte{byte(msg.Type)})
+	if err != nil {
+		return err
+	}
+
+	// Write req id
+	reqIDBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(reqIDBytes, msg.RequestID)
+	_, err = w.Write(reqIDBytes)
 	if err != nil {
 		return err
 	}

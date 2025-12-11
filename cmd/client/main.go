@@ -27,9 +27,12 @@ func main() {
 	}
 	defer conn.Close()
 
-	protocol.Write(conn, protocol.Message{
-		Type: protocol.MsgReady,
+	err = protocol.Write(conn, protocol.Message{
+		Type:      protocol.MsgReady,
+		RequestID: 0,
 	})
+
+	fmt.Println(err)
 
 	for {
 		msg, err := protocol.Read(conn)

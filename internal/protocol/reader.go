@@ -15,7 +15,16 @@ func Read(r io.Reader) (Message, error) {
 		return msg, err
 	}
 
-	msg.Type = Type(typeBuf[0])
+	msg.Type = MsgType(typeBuf[0])
+
+	// read req id ( 8 bytes )
+	reqIDBytes := make([]byte, 8)
+	_, err = io.ReadFull(r, reqIDBytes)
+	if err != nil {
+		return msg, err
+	}
+
+	msg.RequestID = binary.BigEndian.Uint64(reqIDBytes)
 
 	// Read the next 4 bytes ( payload length )
 	lenBuf := make([]byte, 4)
