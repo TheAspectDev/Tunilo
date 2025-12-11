@@ -7,12 +7,15 @@ Tunio uses a basic and well-known protocol for transfering states/data between s
 type Type byte // 0-255
 
 const (
-	MsgReady    Type = 1
-	MsgPing     Type = 2
-	MsgPong     Type = 3
-	MsgRequest  Type = 4
-	MsgError    Type = 5
-	MsgDataAddr Type = 6
+	MsgReady Type = 1
+
+	MsgPing Type = 2
+	MsgPong Type = 3
+
+	MsgError Type = 4
+
+	MsgRequest  Type = 6
+	MsgResponse Type = 7
 )
 ```
 
