@@ -84,6 +84,7 @@ func (srv *Server) waitForClientReady(conn net.Conn) error {
 	var passBuffer bytes.Buffer
 	writer := bufio.NewWriter(&passBuffer)
 	writer.WriteString(srv.password)
+	writer.Flush()
 
 	fmt.Println(msg.Payload)
 
