@@ -3,7 +3,6 @@ package server
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -56,8 +55,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error parsing response %v", err)
 		return
 	}
-
-	fmt.Println(response.Status)
 
 	CopyResponseHeaders(w, response)
 	w.WriteHeader(response.StatusCode)

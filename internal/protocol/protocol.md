@@ -1,40 +1,88 @@
-# Tunio Protocol
-Tunio uses a basic and well-known protocol for transfering states/data between server/client.
+# Binary Message Protocol
+
+This document describes the binary wire protocol used by the `protocol` package. The protocol is designed to be simple, efficient, and suitable for streaming over any `io.Reader` / `io.Writer` (e.g. TCP connections).
+
+
+## Overview
+
+Each message is sent as a fixed-order binary frame:
+
+```
++------------+----------------+-------------------+-------------------+
+| 1 byte     | 8 bytes        | 4 bytes           | N bytes           |
+| MsgType    | RequestID      | Payload Length    | Payload           |
++------------+----------------+-------------------+-------------------+
+```
+
+All multi-byte integer fields are encoded using **big-endian** byte order.
+
 
 ## Message Types
 
+The first byte of every message identifies its type.
+
+| Name          | Value | Description                                      |
+| ------------- | ----- | ------------------------------------------------ |
+| `MsgReady`    | 1     | Indicates readiness or successful initialization |
+| `MsgPing`     | 2     | Keepalive or liveness check                      |
+| `MsgPong`     | 3     | Response to `MsgPing`                            |
+| `MsgError`    | 4     | Error message                                    |
+| `MsgRequest`  | 6     | Request message                                  |
+| `MsgResponse` | 7     | Response message                                 |
+
+
+## Field Definitions
+
+### 1. MsgType (1 byte)
+
+* Type: `byte`
+* Purpose: Identifies the semantic meaning of the message
+* Required: Yes
+
+
+### 2. RequestID (8 bytes)
+
+* Type: `uint64`
+* Encoding: Big-endian
+* Purpose:
+
+  * Correlates requests and responses
+  * Can be `0` for messages that do not participate in request/response semantics (e.g. `Ping`, `Ready`)
+
+
+### 3. Payload Length (4 bytes)
+
+* Type: `uint32`
+* Encoding: Big-endian
+* Purpose: Specifies the number of bytes in the payload
+* Value:
+
+  * `0` means no payload
+
+
+### 4. Payload (N bytes)
+
+* Type: Raw bytes (`[]byte`)
+* Length: Defined by the Payload Length field
+* Encoding: Application-defined
+
+
+## Message Structure (Go)
+
 ```go
-type Type byte // 0-255
-
-const (
-	MsgReady Type = 1
-
-	MsgPing Type = 2
-	MsgPong Type = 3
-
-	MsgError Type = 4
-
-	MsgRequest  Type = 6
-	MsgResponse Type = 7
-)
+type Message struct {
+    Type      MsgType
+    RequestID uint64
+    Payload   []byte
+}
 ```
 
-## Structure
 
-```js
-[MESSAGE_TYPE][PAYLOAD_LENGTH][        PAYLOAD       ]
-```
+## Reading Messages
 
-```js
-[   1 Byte   ][    4 Bytes   ][ PAYLOAD_LENGTH Bytes ]
-```
-
-## Examples
-
-```js
-// Data
-[5][12][syntax error]
-// Structure
-[MsgError][Payload length is 12 bytes][12 Bytes of data]
-```
+Messages are read sequentially from a stream in the following order:
+1. Read 1 byte → `MsgType`
+2. Read 8 bytes → `RequestID`
+3. Read 4 bytes → `Payload Length`
+4. Read `Payload Length` bytes → `Payload`
 

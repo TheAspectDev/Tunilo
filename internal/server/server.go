@@ -7,6 +7,7 @@ import (
 
 type Server struct {
 	serverAddress  string
+	password       string
 	controlAddress string
 	client         net.Conn
 	clientMu       sync.Mutex
@@ -17,10 +18,11 @@ type Server struct {
 	writeMu   sync.Mutex
 }
 
-func NewServer(serverAddress string, controlAddress string) *Server {
+func NewServer(serverAddress string, controlAddress string, password string) *Server {
 	return &Server{
 		serverAddress:  serverAddress,
 		controlAddress: controlAddress,
 		pending:        make(map[uint64]chan []byte),
+		password:       password,
 	}
 }

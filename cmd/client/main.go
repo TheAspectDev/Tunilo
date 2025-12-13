@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -18,17 +19,32 @@ const FORWARD_ADDRESS = "http://localhost:8999"
 
 var localClient = &http.Client{
 	Timeout: 25 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConnsPerHost:   100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	},
 }
 
 func main() {
+	pass := flag.String("password", "12345", "Authentication password")
+	flag.Parse()
+
 	conn, err := net.Dial("tcp", CONTROL_SERVER_ADDRESS)
 	if err != nil {
 		log.Println("error while connecting to ", CONTROL_SERVER_ADDRESS)
 	}
 	defer conn.Close()
 
+	var passBuffer bytes.Buffer
+	writer := bufio.NewWriter(&passBuffer)
+	writer.WriteString(*pass)
+	fmt.Println(passBuffer.String())
+
 	protocol.Write(conn, protocol.Message{
 		Type:      protocol.MsgReady,
+		Payload:   passBuffer.Bytes(),
 		RequestID: 0,
 	})
 
@@ -44,12 +60,12 @@ func main() {
 			request, err := http.ReadRequest(reader)
 
 			if err != nil {
-				log.Println("error processing request")
+				log.Println("error processing request:", err)
+				continue
 			}
 
 			forwardRequest(conn, request, msg.RequestID)
 		}
-
 	}
 }
 
@@ -70,7 +86,11 @@ func forwardRequest(conn net.Conn, req *http.Request, req_id uint64) {
 
 	if err != nil {
 		log.Printf("Error forwarding request to local app: %v", err)
-		fmt.Fprintf(conn, "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n")
+		protocol.Write(conn, protocol.Message{
+			Type:      protocol.MsgResponse,
+			RequestID: req_id,
+			Payload:   []byte("HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n"),
+		})
 		return
 	}
 

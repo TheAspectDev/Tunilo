@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -16,7 +17,7 @@ func (srv *Server) StartControlServer() {
 		log.Fatalf("Failed to start control server: %v", err)
 	}
 
-	log.Println("Control server listening on", srv.controlAddress)
+	// log.Println("Control server listening on", srv.controlAddress)
 
 	for {
 		conn, err := ln.Accept()
@@ -33,12 +34,12 @@ func (srv *Server) StartControlServer() {
 }
 
 func (srv *Server) initClient(conn net.Conn) {
-	if err := waitForClientReady(conn); err != nil {
+	if err := srv.waitForClientReady(conn); err != nil {
 		conn.Close()
 		return
 	}
 
-	log.Println("client ready")
+	// log.Println("client ready")
 
 	srv.clientMu.Lock()
 	srv.client = conn
@@ -68,7 +69,7 @@ func (srv *Server) tunnelReader(conn net.Conn) {
 	}
 }
 
-func waitForClientReady(conn net.Conn) error {
+func (srv *Server) waitForClientReady(conn net.Conn) error {
 	reader := bufio.NewReader(conn)
 	msg, err := protocol.Read(reader)
 
@@ -78,6 +79,16 @@ func waitForClientReady(conn net.Conn) error {
 
 	if !(msg.Type == protocol.MsgReady) {
 		return fmt.Errorf("unexpected READY value: %q", msg.Type)
+	}
+
+	var passBuffer bytes.Buffer
+	writer := bufio.NewWriter(&passBuffer)
+	writer.WriteString(srv.password)
+
+	fmt.Println(msg.Payload)
+
+	if !bytes.Equal(msg.Payload, passBuffer.Bytes()) {
+		conn.Close()
 	}
 
 	return nil
