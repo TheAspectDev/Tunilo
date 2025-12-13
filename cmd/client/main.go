@@ -40,6 +40,7 @@ func main() {
 	var passBuffer bytes.Buffer
 	writer := bufio.NewWriter(&passBuffer)
 	writer.WriteString(*pass)
+	writer.Flush()
 	fmt.Println(passBuffer.String())
 
 	protocol.Write(conn, protocol.Message{
