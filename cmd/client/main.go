@@ -1,18 +1,16 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/internal/client"
 )
+
+// Note: concurrency caused extra overhead and increased latency
 
 const CONTROL_SERVER_ADDRESS = "0.0.0.0:9090"
 const FORWARD_ADDRESS = "http://localhost:8999"
@@ -37,77 +35,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	var passBuffer bytes.Buffer
-	writer := bufio.NewWriter(&passBuffer)
-	writer.WriteString(*pass)
-	writer.Flush()
-	fmt.Println(passBuffer.String())
-
-	protocol.Write(conn, protocol.Message{
-		Type:      protocol.MsgReady,
-		Payload:   passBuffer.Bytes(),
-		RequestID: 0,
-	})
+	process := client.NewClient(conn, localClient, FORWARD_ADDRESS)
+	process.Authenticate(pass)
 
 	for {
-		msg, err := protocol.Read(conn)
-		if err != nil {
-			log.Println("error reading message", err)
-			return
-		}
-
-		if msg.Type == protocol.MsgRequest {
-			reader := bufio.NewReader(bytes.NewReader(msg.Payload))
-			request, err := http.ReadRequest(reader)
-
-			if err != nil {
-				log.Println("error processing request:", err)
-				continue
-			}
-
-			forwardRequest(conn, request, msg.RequestID)
-		}
+		process.HandleMessage()
 	}
-}
-
-func forwardRequest(conn net.Conn, req *http.Request, req_id uint64) {
-	forwardData := strings.Split(FORWARD_ADDRESS, "://")
-
-	// something.com
-	req.URL.Host = forwardData[1]
-	// http or https
-	req.URL.Scheme = forwardData[0]
-
-	// something.com
-	req.Host = forwardData[1]
-
-	req.RequestURI = ""
-
-	localResp, err := localClient.Do(req)
-
-	if err != nil {
-		log.Printf("Error forwarding request to local app: %v", err)
-		protocol.Write(conn, protocol.Message{
-			Type:      protocol.MsgResponse,
-			RequestID: req_id,
-			Payload:   []byte("HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n"),
-		})
-		return
-	}
-
-	defer localResp.Body.Close()
-
-	var RequestBuffer bytes.Buffer
-
-	if err := localResp.Write(&RequestBuffer); err != nil {
-		log.Printf("Failed to serialize HTTP response: %v", err)
-		return
-	}
-
-	protocol.Write(conn, protocol.Message{
-		Type:      protocol.MsgResponse,
-		RequestID: req_id,
-		Payload:   RequestBuffer.Bytes(),
-	})
-
 }

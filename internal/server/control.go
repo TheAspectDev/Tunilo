@@ -17,8 +17,6 @@ func (srv *Server) StartControlServer() {
 		log.Fatalf("Failed to start control server: %v", err)
 	}
 
-	// log.Println("Control server listening on", srv.controlAddress)
-
 	for {
 		conn, err := ln.Accept()
 		srv.clientMu.Lock()
@@ -38,8 +36,6 @@ func (srv *Server) initClient(conn net.Conn) {
 		conn.Close()
 		return
 	}
-
-	// log.Println("client ready")
 
 	srv.clientMu.Lock()
 	srv.client = conn
@@ -85,8 +81,6 @@ func (srv *Server) waitForClientReady(conn net.Conn) error {
 	writer := bufio.NewWriter(&passBuffer)
 	writer.WriteString(srv.password)
 	writer.Flush()
-
-	fmt.Println(msg.Payload)
 
 	if !bytes.Equal(msg.Payload, passBuffer.Bytes()) {
 		conn.Close()
