@@ -30,7 +30,6 @@ func NewControlSession(conn net.Conn) *ControlSession {
 
 func (s *ControlSession) Run() {
 	reader := bufio.NewReader(s.conn)
-
 	defer s.cleanup()
 
 	for {
