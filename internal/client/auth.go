@@ -7,13 +7,13 @@ import (
 	"github.com/TheAspectDev/tunio/internal/protocol"
 )
 
-func (client *Client) Authenticate(password *string) {
+func (session *Session) Authenticate(password string) error {
 	var passBuffer bytes.Buffer
 	writer := bufio.NewWriter(&passBuffer)
-	writer.WriteString(*password)
+	writer.WriteString(password)
 	writer.Flush()
 
-	protocol.Write(client.controlServer, protocol.Message{
+	return protocol.Write(session.controlConn, protocol.Message{
 		Type:      protocol.MsgReady,
 		Payload:   passBuffer.Bytes(),
 		RequestID: 0,

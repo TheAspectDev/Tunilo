@@ -9,9 +9,8 @@ import (
 	"github.com/TheAspectDev/tunio/internal/protocol"
 )
 
-func (client *Client) ForwardRequest(req *http.Request, req_id uint64) {
-
-	forwardData := strings.Split(client.forward, "://")
+func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {
+	forwardData := strings.Split(session.forward, "://")
 
 	// something.com
 	req.URL.Host = forwardData[1]
@@ -22,11 +21,11 @@ func (client *Client) ForwardRequest(req *http.Request, req_id uint64) {
 
 	req.RequestURI = ""
 
-	localResp, err := client.localClient.Do(req)
+	localResp, err := session.localClient.Do(req)
 
 	if err != nil {
 		log.Printf("Error forwarding request to local app: %v", err)
-		protocol.Write(client.controlServer, protocol.Message{
+		protocol.Write(session.controlConn, protocol.Message{
 			Type:      protocol.MsgResponse,
 			RequestID: req_id,
 			Payload:   []byte("HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n"),
@@ -42,7 +41,7 @@ func (client *Client) ForwardRequest(req *http.Request, req_id uint64) {
 		return
 	}
 
-	protocol.Write(client.controlServer, protocol.Message{
+	protocol.Write(session.controlConn, protocol.Message{
 		Type:      protocol.MsgResponse,
 		RequestID: req_id,
 		Payload:   RequestBuffer.Bytes(),

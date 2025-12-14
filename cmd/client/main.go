@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net"
@@ -9,11 +10,6 @@ import (
 
 	"github.com/TheAspectDev/tunio/internal/client"
 )
-
-// Note: concurrency caused extra overhead and increased latency
-
-const CONTROL_SERVER_ADDRESS = "0.0.0.0:9090"
-const FORWARD_ADDRESS = "http://localhost:8999"
 
 var localClient = &http.Client{
 	Timeout: 25 * time.Second,
@@ -25,20 +21,30 @@ var localClient = &http.Client{
 	},
 }
 
+// Note: concurrency caused extra overhead and increased latency, so ;D no concurrency
 func main() {
 	pass := flag.String("password", "12345", "Authentication password")
+	controlAddr := flag.String("control", "127.0.0.1:9090", "control server address")
+	forrwardAddr := flag.String("forward", "http://localhost:8999", "local forward address")
 	flag.Parse()
 
-	conn, err := net.Dial("tcp", CONTROL_SERVER_ADDRESS)
+	conn, err := net.Dial("tcp", *controlAddr)
 	if err != nil {
-		log.Println("error while connecting to ", CONTROL_SERVER_ADDRESS)
+		log.Println("error while connecting to ", *controlAddr)
 	}
 	defer conn.Close()
 
-	process := client.NewClient(conn, localClient, FORWARD_ADDRESS)
-	process.Authenticate(pass)
+	session := client.NewSession(conn, localClient, *forrwardAddr)
 
-	for {
-		process.HandleMessage()
+	if err := session.Authenticate(*pass); err != nil {
+		log.Fatal("authentication failed:", err)
+	}
+
+	// NOTE: not used yet, built for TUI: ctrl+c-quit support
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := session.Run(ctx); err != nil {
+		log.Println("session ended:", err)
 	}
 }
