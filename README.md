@@ -32,4 +32,4 @@ Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 ## License
-All the code is licensed under [MIT](https://choosealicense.com/licenses/mit/)
+All the code is licensed under [MIT](x)

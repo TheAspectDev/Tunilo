@@ -19,14 +19,15 @@ func (srv *Server) StartControlServer() {
 
 	for {
 		conn, err := ln.Accept()
-		srv.clientMu.Lock()
-		srv.client = conn
-		srv.clientMu.Unlock()
-
 		if err != nil {
 			log.Println("Error accepting client:", err)
 			continue
 		}
+
+		srv.clientMu.Lock()
+		srv.client = conn
+		srv.clientMu.Unlock()
+
 		go srv.initClient(conn)
 	}
 }
@@ -79,11 +80,16 @@ func (srv *Server) waitForClientReady(conn net.Conn) error {
 
 	var passBuffer bytes.Buffer
 	writer := bufio.NewWriter(&passBuffer)
-	writer.WriteString(srv.password)
-	writer.Flush()
+
+	if _, err := writer.WriteString(srv.password); err != nil {
+		return fmt.Errorf("failed to serialize password: %w", err)
+	}
+	if err := writer.Flush(); err != nil {
+		return fmt.Errorf("failed to serialize password: %w", err)
+	}
 
 	if !bytes.Equal(msg.Payload, passBuffer.Bytes()) {
-		conn.Close()
+		return fmt.Errorf("password mismatch")
 	}
 
 	return nil

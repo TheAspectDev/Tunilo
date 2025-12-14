@@ -8,18 +8,17 @@ import (
 	"github.com/TheAspectDev/tunio/internal/server"
 )
 
-const CONTROL_SERVER_ADDRESS = "0.0.0.0:9090"
-const PUBLIC_SERVER_ADDRESS = "0.0.0.0:4311"
-
 func main() {
 	pass := flag.String("password", "12345", "Authentication password")
+	controlAddr := flag.String("control", "0.0.0.0:9090", "control server address")
+	publicAddr := flag.String("forward", "http://0.0.0.0:4311", "public server address")
 	flag.Parse()
 
-	srv := server.NewServer(PUBLIC_SERVER_ADDRESS, CONTROL_SERVER_ADDRESS, *pass)
+	srv := server.NewServer(*publicAddr, *controlAddr, *pass)
 	go srv.StartControlServer()
 
 	http.HandleFunc("/", srv.HandleHTTP)
-	err := http.ListenAndServe(PUBLIC_SERVER_ADDRESS, nil)
+	err := http.ListenAndServe(*publicAddr, nil)
 
 	if err != nil {
 		log.Fatal("HTTP srvr failed:", err)

@@ -10,12 +10,11 @@ type Server struct {
 	password       string
 	controlAddress string
 	client         net.Conn
-	clientMu       sync.Mutex
+	clientMu       sync.RWMutex
 
 	pending   map[uint64]chan []byte
 	pendingMu sync.Mutex
 	counter   uint64
-	writeMu   sync.Mutex
 }
 
 func NewServer(serverAddress string, controlAddress string, password string) *Server {

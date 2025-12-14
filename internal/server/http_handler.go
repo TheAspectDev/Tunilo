@@ -12,9 +12,9 @@ import (
 )
 
 func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
-	srv.clientMu.Lock()
+	srv.clientMu.RLock()
 	clientConn := srv.client
-	srv.clientMu.Unlock()
+	srv.clientMu.RUnlock()
 
 	var RequestBuffer bytes.Buffer
 
@@ -32,15 +32,19 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	srv.pending[id] = respChan
 	srv.pendingMu.Unlock()
 
-	srv.writeMu.Lock()
+	srv.clientMu.Lock()
 
-	// todo
-	_ = protocol.Write(clientConn, protocol.Message{
+	err := protocol.Write(clientConn, protocol.Message{
 		Type:      protocol.MsgRequest,
 		RequestID: id,
 		Payload:   RequestBuffer.Bytes(),
 	})
-	srv.writeMu.Unlock()
+	if err != nil {
+		log.Printf("Failed to write HTTP request: %v", err)
+		http.Error(w, "Failed to write request", http.StatusInternalServerError)
+		return
+	}
+	srv.clientMu.Unlock()
 
 	payload := <-respChan
 
