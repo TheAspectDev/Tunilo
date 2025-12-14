@@ -132,9 +132,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case "backspace":
-			session := m.srv.Sessions[m.table.SelectedRow()[0]]
-			session.Close()
-			delete(m.srv.Sessions, m.table.SelectedRow()[0])
+			selected := m.table.SelectedRow()
+
+			if len(selected) == 0 {
+				return m, nil
+			}
+			id := selected[0]
+
+			m.srv.SessionsMu.RLock()
+			session, exists := m.srv.Sessions[id]
+			m.srv.SessionsMu.RUnlock()
+
+			if exists {
+				session.Close()
+				m.srv.SessionsMu.Lock()
+				delete(m.srv.Sessions, id)
+				m.srv.SessionsMu.Unlock()
+				m.updateClientTable()
+			}
+
 			return m, nil
 		}
 	}
