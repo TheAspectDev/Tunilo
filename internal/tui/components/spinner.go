@@ -77,7 +77,6 @@ func (m *model) updateClientTable() {
 	rows := make([]table.Row, 0, len(keys))
 
 	if len(keys) == 0 {
-		m.table.SetCursor(-1)
 		m.table.Blur()
 		m.table.SetStyles(unselectableStyle)
 		rows = append(rows, table.Row{
@@ -135,6 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "backspace":
 			session := m.srv.Sessions[m.table.SelectedRow()[0]]
 			session.Close()
+			delete(m.srv.Sessions, m.table.SelectedRow()[0])
 			return m, nil
 		}
 	}
