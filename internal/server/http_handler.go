@@ -6,16 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"sync/atomic"
-
-	"github.com/TheAspectDev/tunio/internal/protocol"
 )
 
 func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
-	srv.clientMu.RLock()
-	clientConn := srv.client
-	srv.clientMu.RUnlock()
-
 	var RequestBuffer bytes.Buffer
 
 	if err := r.Write(&RequestBuffer); err != nil {
@@ -24,33 +17,18 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := atomic.AddUint64(&srv.counter, 1)
-
-	respChan := make(chan []byte, 1)
-
-	srv.pendingMu.Lock()
-	srv.pending[id] = respChan
-	srv.pendingMu.Unlock()
-
-	srv.clientMu.Lock()
-
-	err := protocol.Write(clientConn, protocol.Message{
-		Type:      protocol.MsgRequest,
-		RequestID: id,
-		Payload:   RequestBuffer.Bytes(),
-	})
-	if err != nil {
-		log.Printf("Failed to write HTTP request: %v", err)
-		http.Error(w, "Failed to write request", http.StatusInternalServerError)
+	// read this functions comment
+	session := srv.getAnySession()
+	if session == nil {
+		http.Error(w, "no tunnel client connected", http.StatusServiceUnavailable)
 		return
 	}
-	srv.clientMu.Unlock()
 
-	payload := <-respChan
-
-	srv.pendingMu.Lock()
-	delete(srv.pending, id)
-	srv.pendingMu.Unlock()
+	payload, err := session.Forward(RequestBuffer.Bytes())
+	if err != nil {
+		http.Error(w, "tunnel error", http.StatusBadGateway)
+		return
+	}
 
 	reader := bufio.NewReader(bytes.NewReader(payload))
 	response, err := http.ReadResponse(reader, r)

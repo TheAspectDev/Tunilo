@@ -1,7 +1,6 @@
 package server
 
 import (
-	"net"
 	"sync"
 )
 
@@ -9,19 +8,29 @@ type Server struct {
 	serverAddress  string
 	password       string
 	controlAddress string
-	client         net.Conn
-	clientMu       sync.RWMutex
 
-	pending   map[uint64]chan []byte
-	pendingMu sync.Mutex
-	counter   uint64
+	sessionsMu sync.RWMutex
+	sessions   map[string]*ControlSession
 }
 
 func NewServer(serverAddress string, controlAddress string, password string) *Server {
 	return &Server{
 		serverAddress:  serverAddress,
 		controlAddress: controlAddress,
-		pending:        make(map[uint64]chan []byte),
+		sessions:       make(map[string]*ControlSession),
 		password:       password,
 	}
+}
+
+// picks the first server
+// reserved for later use
+// ( like for sending certain requests to certain clients )
+func (srv *Server) getAnySession() *ControlSession {
+	srv.sessionsMu.RLock()
+	defer srv.sessionsMu.RUnlock()
+
+	for _, s := range srv.sessions {
+		return s
+	}
+	return nil
 }

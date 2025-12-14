@@ -24,46 +24,26 @@ func (srv *Server) StartControlServer() {
 			continue
 		}
 
-		srv.clientMu.Lock()
-		srv.client = conn
-		srv.clientMu.Unlock()
-
-		go srv.initClient(conn)
+		go srv.handleNewClient(conn)
 	}
 }
 
-func (srv *Server) initClient(conn net.Conn) {
+func (srv *Server) handleNewClient(conn net.Conn) {
 	if err := srv.waitForClientReady(conn); err != nil {
 		conn.Close()
 		return
 	}
 
-	srv.clientMu.Lock()
-	srv.client = conn
-	srv.clientMu.Unlock()
+	session := NewControlSession(conn)
+	key := conn.RemoteAddr().String()
 
-	go srv.tunnelReader(conn)
-}
+	srv.sessionsMu.Lock()
+	srv.sessions[key] = session
+	srv.sessionsMu.Unlock()
 
-func (srv *Server) tunnelReader(conn net.Conn) {
-	reader := bufio.NewReader(conn)
+	fmt.Println(srv.sessions)
 
-	for {
-		msg, err := protocol.Read(reader)
-		if err != nil {
-			return
-		}
-
-		if msg.Type == protocol.MsgResponse {
-			srv.pendingMu.Lock()
-			ch := srv.pending[msg.RequestID]
-			srv.pendingMu.Unlock()
-
-			if ch != nil {
-				ch <- msg.Payload
-			}
-		}
-	}
+	go session.Run()
 }
 
 func (srv *Server) waitForClientReady(conn net.Conn) error {
