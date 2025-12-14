@@ -6,7 +6,6 @@ import (
 
 	"github.com/TheAspectDev/tunio/internal/server"
 	"github.com/TheAspectDev/tunio/internal/tui"
-	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -33,7 +32,6 @@ var unselectableStyle = table.Styles{
 }
 
 type model struct {
-	spinner  spinner.Model
 	quitting bool
 	err      error
 	srv      *server.Server
@@ -56,12 +54,9 @@ func newClientTable() table.Model {
 	return t
 }
 
-func SpinnerModel(srv *server.Server) model {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#00c8ffff"))
+func ServerModel(srv *server.Server) model {
 	t := newClientTable()
-	return model{spinner: s, srv: srv, table: t}
+	return model{srv: srv, table: t}
 }
 
 func (m *model) updateClientTable() {
@@ -104,15 +99,12 @@ func (m *model) updateClientTable() {
 	}
 	m.table.Focus()
 	m.table.SetStyles(defaultStyle)
-	// m.table.SetHeight((len(rows) + 2) * 2)
 	cursor := m.table.Cursor()
 	m.table.SetRows(rows)
 	m.table.SetCursor(cursor)
 }
 
-func (m model) Init() tea.Cmd {
-	return m.spinner.Tick
-}
+func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -157,7 +149,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.table, _ = m.table.Update(msg)
 
 	var cmd tea.Cmd
-	m.spinner, cmd = m.spinner.Update(msg)
 	m.updateClientTable()
 
 	return m, cmd

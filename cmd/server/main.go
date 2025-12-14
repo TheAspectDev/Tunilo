@@ -21,7 +21,7 @@ func main() {
 	pass := flag.String("password", "12345", "Authentication password")
 	controlAddr := flag.String("control", "0.0.0.0:9090", "control server address")
 	publicAddr := flag.String("public", "0.0.0.0:4311", "public server address")
-	noTui := flag.Bool("notui", false, "is tui used? ( false for docker/kuber/automation )")
+	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
 
 	flag.Parse()
 
@@ -63,7 +63,7 @@ func main() {
 
 		lipgloss.DefaultRenderer().Output().ClearScreen()
 
-		p := tea.NewProgram(components.SpinnerModel(srv))
+		p := tea.NewProgram(components.ServerModel(srv))
 
 		if _, err := p.Run(); err != nil {
 			fmt.Println(err)
