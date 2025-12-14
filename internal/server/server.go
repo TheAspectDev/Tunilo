@@ -5,19 +5,19 @@ import (
 )
 
 type Server struct {
-	serverAddress  string
+	ServerAddress  string
 	password       string
-	controlAddress string
+	ControlAddress string
 
-	sessionsMu sync.RWMutex
-	sessions   map[string]*ControlSession
+	SessionsMu sync.RWMutex
+	Sessions   map[string]*ControlSession
 }
 
 func NewServer(serverAddress string, controlAddress string, password string) *Server {
 	return &Server{
-		serverAddress:  serverAddress,
-		controlAddress: controlAddress,
-		sessions:       make(map[string]*ControlSession),
+		ServerAddress:  serverAddress,
+		ControlAddress: controlAddress,
+		Sessions:       make(map[string]*ControlSession),
 		password:       password,
 	}
 }
@@ -26,10 +26,10 @@ func NewServer(serverAddress string, controlAddress string, password string) *Se
 // reserved for later use
 // ( like for sending certain requests to certain clients )
 func (srv *Server) getAnySession() *ControlSession {
-	srv.sessionsMu.RLock()
-	defer srv.sessionsMu.RUnlock()
+	srv.SessionsMu.RLock()
+	defer srv.SessionsMu.RUnlock()
 
-	for _, s := range srv.sessions {
+	for _, s := range srv.Sessions {
 		return s
 	}
 	return nil

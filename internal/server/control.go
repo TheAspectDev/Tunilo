@@ -11,7 +11,7 @@ import (
 )
 
 func (srv *Server) StartControlServer() {
-	ln, err := net.Listen("tcp", srv.controlAddress)
+	ln, err := net.Listen("tcp", srv.ControlAddress)
 
 	if err != nil {
 		log.Fatalf("Failed to start control server: %v", err)
@@ -37,13 +37,21 @@ func (srv *Server) handleNewClient(conn net.Conn) {
 	session := NewControlSession(conn)
 	key := conn.RemoteAddr().String()
 
-	srv.sessionsMu.Lock()
-	srv.sessions[key] = session
-	srv.sessionsMu.Unlock()
+	srv.SessionsMu.Lock()
+	srv.Sessions[key] = session
+	srv.SessionsMu.Unlock()
 
-	fmt.Println(srv.sessions)
+	go func(conn net.Conn) {
+		defer func() {
+			conn.Close()
 
-	go session.Run()
+			srv.SessionsMu.Lock()
+			delete(srv.Sessions, key)
+			srv.SessionsMu.Unlock()
+		}()
+
+		session.Run()
+	}(conn)
 }
 
 func (srv *Server) waitForClientReady(conn net.Conn) error {

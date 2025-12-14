@@ -33,7 +33,8 @@ func main() {
 	}()
 	lipgloss.DefaultRenderer().Output().ClearScreen()
 
-	p := tea.NewProgram(components.SpinnerModel(*publicAddr, *controlAddr))
+	p := tea.NewProgram(components.SpinnerModel(srv))
+
 	if _, err := p.Run(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

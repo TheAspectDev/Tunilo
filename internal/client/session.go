@@ -24,7 +24,6 @@ func NewSession(controlConn net.Conn, localClient *http.Client, forward string) 
 func (s *Session) Run(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
-
 		// close connection on ctx close
 		s.controlConn.Close()
 	}()
