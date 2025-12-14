@@ -150,7 +150,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.srv.SessionsMu.Unlock()
 				m.updateClientTable()
 			}
-
 			return m, nil
 		}
 	}
