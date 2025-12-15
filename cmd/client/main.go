@@ -31,7 +31,6 @@ func main() {
 	controlAddr := flag.String("control", "127.0.0.1:9090", "control server address")
 	forrwardAddr := flag.String("forward", "http://localhost:8999", "local forward address")
 	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
-
 	flag.Parse()
 
 	conn, err := net.Dial("tcp", *controlAddr)

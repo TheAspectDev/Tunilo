@@ -15,9 +15,8 @@ grouped by expected implementation timeframe.
 
 - **Build a TUI (Terminal User Interface)** 
   - ~~✅ Add TUI to server~~
-  - Add TUI to client
-  - Improve usability over raw CLI output 
-  - Configuration using CLI
+  - ~~✅ AAdd TUI to client~~
+  - Improve usability over raw CLI output - on the way
 
 - **Custom HTML Error pages**
   - Add `no tunnel connected` html page
