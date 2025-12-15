@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"strings"
 
@@ -24,7 +23,7 @@ func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {
 	localResp, err := session.localClient.Do(req)
 
 	if err != nil {
-		log.Printf("Error forwarding request to local app: %v", err)
+		session.Logger.Errorf(err, "Error forwarding request to local app: ")
 		protocol.Write(session.controlConn, protocol.Message{
 			Type:      protocol.MsgResponse,
 			RequestID: req_id,
@@ -37,7 +36,7 @@ func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {
 
 	var RequestBuffer bytes.Buffer
 	if err := localResp.Write(&RequestBuffer); err != nil {
-		log.Printf("Failed to serialize HTTP response: %v", err)
+		session.Logger.Errorf(err, "Failed to serialize HTTP response")
 		return
 	}
 

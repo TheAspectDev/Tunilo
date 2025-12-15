@@ -13,6 +13,8 @@ func (session *Session) Authenticate(password string) error {
 	writer.WriteString(password)
 	writer.Flush()
 
+	session.Logger.Logf("Authenticating...")
+
 	return protocol.Write(session.controlConn, protocol.Message{
 		Type:      protocol.MsgReady,
 		Payload:   passBuffer.Bytes(),

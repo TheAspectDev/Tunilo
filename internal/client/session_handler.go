@@ -25,6 +25,7 @@ func (s *Session) handleControlMessage() error {
 func (s *Session) handleRequest(msg *protocol.Message) error {
 	reader := bufio.NewReader(bytes.NewReader(msg.Payload))
 	req, err := http.ReadRequest(reader)
+	s.Logger.Logf("got a new message!")
 	if err != nil {
 		return err
 	}

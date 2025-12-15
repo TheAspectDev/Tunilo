@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/TheAspectDev/tunio/internal/server"
-	"github.com/TheAspectDev/tunio/internal/server/tui/components"
+	"github.com/TheAspectDev/tunio/internal/server/tui"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -63,7 +63,7 @@ func main() {
 
 		lipgloss.DefaultRenderer().Output().ClearScreen()
 
-		p := tea.NewProgram(components.ServerModel(srv))
+		p := tea.NewProgram(tui.ServerModel(srv))
 
 		if _, err := p.Run(); err != nil {
 			fmt.Println(err)
