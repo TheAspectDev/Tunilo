@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/TheAspectDev/tunio/internal/server"
 	"github.com/TheAspectDev/tunio/internal/tui"
@@ -10,6 +11,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+type refreshMsg struct{}
 
 var defaultStyle = table.Styles{
 	Header: lipgloss.NewStyle().
@@ -104,7 +107,13 @@ func (m *model) updateClientTable() {
 	m.table.SetCursor(cursor)
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func refreshTick() tea.Cmd {
+	return tea.Tick(time.Millisecond*500, func(time.Time) tea.Msg {
+		return refreshMsg{}
+	})
+}
+
+func (m model) Init() tea.Cmd { return refreshTick() }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -144,12 +153,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+
+	case refreshMsg:
+		m.updateClientTable()
+		return m, refreshTick()
 	}
 
 	m.table, _ = m.table.Update(msg)
 
 	var cmd tea.Cmd
-	m.updateClientTable()
 
 	return m, cmd
 }
