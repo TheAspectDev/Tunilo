@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/TheAspectDev/tunio/internal/server"
-	"github.com/TheAspectDev/tunio/internal/tui/components"
+	"github.com/TheAspectDev/tunio/internal/server/tui/components"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
