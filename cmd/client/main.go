@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -36,17 +35,19 @@ func main() {
 	flag.Parse()
 
 	conn, err := net.Dial("tcp", *controlAddr)
-	if err != nil {
-		log.Println("error while connecting to ", *controlAddr)
-	}
-	defer conn.Close()
-
 	session := client.NewSession(conn, localClient, *forrwardAddr)
+
 	if *noTui {
 		session.Logger = logging.StdoutLogger{}
 	} else {
 		session.Logger = tui.UILogger{}
 	}
+
+	if err != nil {
+		session.Logger.Logf("error while connecting to ", *controlAddr)
+		return
+	}
+	defer conn.Close()
 
 	if err := session.Authenticate(*pass); err != nil {
 		session.Logger.Errorf(err, "authentication failed:")

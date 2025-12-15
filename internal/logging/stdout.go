@@ -8,13 +8,13 @@ import (
 type StdoutLogger struct{}
 
 func (StdoutLogger) Logf(format string, args ...any) {
-	fmt.Fprintf(os.Stdout, format+"\n", args...)
+	fmt.Fprintln(os.Stdout, format, args)
 }
 
 func (StdoutLogger) Errorf(err error, format string, args ...any) {
 	if err != nil {
 		format = format + ": %v"
-		args = append(args, err)
+		args = append(args, err.Error())
 	}
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 }
