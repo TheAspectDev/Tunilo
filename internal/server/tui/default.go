@@ -1,12 +1,9 @@
 package tui
 
 import (
-	"fmt"
-	"sort"
 	"time"
 
 	"github.com/TheAspectDev/tunio/internal/server"
-	"github.com/TheAspectDev/tunio/internal/tui"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -62,51 +59,6 @@ func ServerModel(srv *server.Server) model {
 	return model{srv: srv, table: t}
 }
 
-func (m *model) updateClientTable() {
-	m.srv.SessionsMu.RLock()
-	keys := make([]string, 0, len(m.srv.Sessions))
-
-	for k := range m.srv.Sessions {
-		keys = append(keys, k)
-	}
-	m.srv.SessionsMu.RUnlock()
-
-	sort.Strings(keys)
-	rows := make([]table.Row, 0, len(keys))
-
-	if len(keys) == 0 {
-		m.table.Blur()
-		m.table.SetStyles(unselectableStyle)
-		rows = append(rows, table.Row{
-			tui.Color("No clients connected", lipgloss.Color("#5e5e5eff")),
-			"",
-		})
-		m.table.SetRows(rows)
-		return
-	}
-
-	// default color-override doesn't work here as it plays with components width
-	// so colors are going to be removed if the row is selected
-	for _, k := range keys {
-		if len(m.table.SelectedRow()) > 0 && m.table.SelectedRow()[0] == k {
-			rows = append(rows, table.Row{
-				k,
-				"● Connected",
-			})
-		} else {
-			rows = append(rows, table.Row{
-				k,
-				tui.Color("● Connected", lipgloss.Color("#00c8ffff")),
-			})
-		}
-	}
-	m.table.Focus()
-	m.table.SetStyles(defaultStyle)
-	cursor := m.table.Cursor()
-	m.table.SetRows(rows)
-	m.table.SetCursor(cursor)
-}
-
 func refreshTick() tea.Cmd {
 	return tea.Tick(time.Millisecond*500, func(time.Time) tea.Msg {
 		return refreshMsg{}
@@ -114,90 +66,3 @@ func refreshTick() tea.Cmd {
 }
 
 func (m model) Init() tea.Cmd { return refreshTick() }
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-
-	case tea.WindowSizeMsg:
-		m.table.SetWidth(msg.Width - 2)
-
-		tableHeight := msg.Height - 10
-		if tableHeight < 5 {
-			tableHeight = 5
-		}
-		m.table.SetHeight(tableHeight)
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "q", "esc", "ctrl+c":
-			m.quitting = true
-			return m, tea.Quit
-		case "backspace":
-			selected := m.table.SelectedRow()
-
-			if len(selected) == 0 {
-				return m, nil
-			}
-			id := selected[0]
-
-			m.srv.SessionsMu.RLock()
-			session, exists := m.srv.Sessions[id]
-			m.srv.SessionsMu.RUnlock()
-
-			if exists {
-				session.Close()
-				m.srv.SessionsMu.Lock()
-				delete(m.srv.Sessions, id)
-				m.srv.SessionsMu.Unlock()
-				m.updateClientTable()
-			}
-			return m, nil
-		}
-
-	case refreshMsg:
-		m.updateClientTable()
-		return m, refreshTick()
-	}
-
-	m.table, _ = m.table.Update(msg)
-
-	var cmd tea.Cmd
-
-	return m, cmd
-}
-
-func (m model) HelpNotes() string {
-	var keyNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#338f8cff"))
-	var valNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#5f5f5fff"))
-
-	return (keyNote.Render("↑/k") + " 	" + valNote.Render("move up")) + "			" + (keyNote.Render("q/esc") + " " + valNote.Render("kill tunnel")) + "\n" +
-		(keyNote.Render("↓/j") + "     " + valNote.Render("move down")) + "\n" +
-		(keyNote.Render("delete") + "  " + valNote.Render("close connection")) + "\n"
-
-}
-
-func (m model) View() string {
-	if m.err != nil {
-		return m.err.Error()
-	}
-
-	var title = lipgloss.NewStyle().
-		SetString("  Tunilo Tunnel - SERVER").
-		Width(1000).
-		Height(1).
-		Foreground(lipgloss.Color("#ffffff")).
-		Bold(true).
-		Background(lipgloss.Color("#008599ff"))
-
-	tableBox := lipgloss.NewStyle().
-		BorderForeground(lipgloss.Color("#3c3c3cff")).
-		Border(lipgloss.RoundedBorder()).
-		Render(m.table.View())
-
-	return fmt.Sprintf(
-		"%s"+"\n\n"+"%s"+"\n\n"+"%s",
-		title.Render(),
-		tableBox,
-		m.HelpNotes(),
-	)
-}
