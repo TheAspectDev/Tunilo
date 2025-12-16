@@ -61,13 +61,13 @@ jobs:
             ext=".exe"
           fi
 
-          out="dist/tunio-${{ matrix.component }}-${GOOS}-${GOARCH}${ext}"
+          out="dist/tunilo-${{ matrix.component }}-${GOOS}-${GOARCH}${ext}"
           go build -trimpath -ldflags "-s -w" -o "${out}" "${{ matrix.pkg }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tunio-${{ matrix.component }}-${{ matrix.goos }}-amd64
+          name: tunilo-${{ matrix.component }}-${{ matrix.goos }}-amd64
           path: dist/*
           if-no-files-found: error
 
@@ -83,7 +83,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: tunio-*
+          pattern: tunilo-*
           merge-multiple: true
 
       - name: Publish release
