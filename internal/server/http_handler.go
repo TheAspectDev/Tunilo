@@ -8,8 +8,19 @@ import (
 	"net/http"
 )
 
+var inflight = make(chan struct{}, 200)
+
 func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	var RequestBuffer bytes.Buffer
+
+	// Heavy load
+	select {
+	case inflight <- struct{}{}:
+		defer func() { <-inflight }()
+	default:
+		http.Error(w, "Tunnel busy", http.StatusServiceUnavailable)
+		return
+	}
 
 	if err := r.Write(&RequestBuffer); err != nil {
 		log.Printf("Failed to serialize HTTP request: %v", err)

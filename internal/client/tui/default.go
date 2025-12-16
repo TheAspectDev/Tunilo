@@ -17,7 +17,7 @@ type model struct {
 }
 
 func ClientModel(session *client.Session) model {
-	vp := viewport.New(100, 8)
+	vp := viewport.New(100, 14)
 	vp.Style = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#555555"))
