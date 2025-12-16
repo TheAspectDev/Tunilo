@@ -11,6 +11,7 @@ import (
 	"github.com/TheAspectDev/tunio/internal/client"
 	"github.com/TheAspectDev/tunio/internal/client/tui"
 	"github.com/TheAspectDev/tunio/internal/logging"
+	"github.com/TheAspectDev/tunio/internal/protocol"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -34,6 +35,7 @@ func main() {
 	flag.Parse()
 
 	conn, err := net.Dial("tcp", *controlAddr)
+	protocol.EnableTCPKeepalive(conn)
 	session := client.NewSession(conn, localClient, *forrwardAddr)
 
 	if *noTui {

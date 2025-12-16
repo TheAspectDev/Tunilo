@@ -4,8 +4,10 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/TheAspectDev/tunio/internal/logging"
+	"github.com/TheAspectDev/tunio/internal/protocol"
 )
 
 type Session struct {
@@ -36,11 +38,30 @@ func (s *Session) Run(ctx context.Context) error {
 		s.controlConn.Close()
 	}()
 
+	go s.startPingLoop(ctx)
+
 	s.Logger.Logf("Listening to requests...")
 
 	for {
 		if err := s.handleControlMessage(); err != nil {
 			return err
+		}
+	}
+}
+
+func (s *Session) startPingLoop(ctx context.Context) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			_ = protocol.Write(s.controlConn, protocol.Message{
+				Type:      protocol.MsgPing,
+				RequestID: 0,
+			})
 		}
 	}
 }

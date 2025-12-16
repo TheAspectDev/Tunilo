@@ -19,6 +19,7 @@ func (srv *Server) StartControlServer() {
 
 	for {
 		conn, err := ln.Accept()
+		protocol.EnableTCPKeepalive(conn)
 		if err != nil {
 			log.Println("Error accepting client:", err)
 			continue

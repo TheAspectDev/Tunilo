@@ -3,6 +3,7 @@ package server
 import (
 	"bufio"
 	"errors"
+	"log"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -17,6 +18,7 @@ type ControlSession struct {
 	pending   map[uint64]chan []byte
 	pendingMu sync.Mutex
 
+	writeMu sync.Mutex
 	counter atomic.Uint64
 	closed  chan struct{}
 }
@@ -41,10 +43,20 @@ func (s *ControlSession) Run() {
 	for {
 		msg, err := protocol.Read(reader)
 		if err != nil {
+			log.Printf("control session closed: %v", err)
 			return
 		}
 
-		if msg.Type == protocol.MsgResponse {
+		switch msg.Type {
+		case protocol.MsgPing:
+			s.writeMu.Lock()
+			protocol.Write(s.conn, protocol.Message{
+				Type:      protocol.MsgPong,
+				RequestID: 0,
+			})
+			s.writeMu.Unlock()
+
+		case protocol.MsgResponse:
 			s.pendingMu.Lock()
 			ch := s.pending[msg.RequestID]
 			s.pendingMu.Unlock()
@@ -53,6 +65,7 @@ func (s *ControlSession) Run() {
 				ch <- msg.Payload
 			}
 		}
+
 	}
 }
 
@@ -84,11 +97,14 @@ func (s *ControlSession) Forward(payload []byte) ([]byte, error) {
 		s.pendingMu.Unlock()
 	}()
 
+	s.writeMu.Lock()
 	err := protocol.Write(s.conn, protocol.Message{
 		Type:      protocol.MsgRequest,
 		RequestID: id,
 		Payload:   payload,
 	})
+	s.writeMu.Unlock()
+
 	if err != nil {
 		return nil, err
 	}
