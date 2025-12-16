@@ -9,7 +9,6 @@ def index():
 @app.route("/echo", methods=["POST"])
 def echo():
     data = request.get_json(silent=True)
-
     if data is None:
         return jsonify({"received": request.data.decode()}), 200
     
@@ -17,5 +16,4 @@ def echo():
 
 
 if __name__ == "__main__":
-    print("running at http://localhost:8999")
     app.run(host="localhost", port=8999, threaded=True)

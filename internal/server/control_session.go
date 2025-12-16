@@ -10,13 +10,14 @@ import (
 	"github.com/TheAspectDev/tunio/internal/protocol"
 )
 
+// Each session gets a single ControlSession
 type ControlSession struct {
 	conn net.Conn
 
 	pending   map[uint64]chan []byte
 	pendingMu sync.Mutex
 
-	counter uint64
+	counter atomic.Uint64
 	closed  chan struct{}
 }
 
@@ -32,6 +33,7 @@ func (s *ControlSession) Close() {
 	s.conn.Close()
 }
 
+// Listen for request ids
 func (s *ControlSession) Run() {
 	reader := bufio.NewReader(s.conn)
 	defer s.cleanup()
@@ -66,7 +68,7 @@ func (s *ControlSession) cleanup() {
 }
 
 func (s *ControlSession) Forward(payload []byte) ([]byte, error) {
-	id := atomic.AddUint64(&s.counter, 1)
+	id := s.counter.Add(1)
 	ch := make(chan []byte, 1)
 
 	// add the request to pending list
