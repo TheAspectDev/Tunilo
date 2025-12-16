@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.component }} (${{ matrix.goos }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: client
+            pkg: ./cmd/client
+            goos: linux
+            runner: ubuntu-latest
+          - component: client
+            pkg: ./cmd/client
+            goos: darwin
+            runner: macos-latest
+          - component: client
+            pkg: ./cmd/client
+            goos: windows
+            runner: windows-latest
+          - component: server
+            pkg: ./cmd/server
+            goos: linux
+            runner: ubuntu-latest
+          - component: server
+            pkg: ./cmd/server
+            goos: darwin
+            runner: macos-latest
+          - component: server
+            pkg: ./cmd/server
+            goos: windows
+            runner: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build binary
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          ext=""
+          if [ "${GOOS}" = "windows" ]; then
+            ext=".exe"
+          fi
+
+          out="dist/tunio-${{ matrix.component }}-${GOOS}-${GOARCH}${ext}"
+          go build -trimpath -ldflags "-s -w" -o "${out}" "${{ matrix.pkg }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tunio-${{ matrix.component }}-${{ matrix.goos }}-amd64
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: tunio-*
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+
