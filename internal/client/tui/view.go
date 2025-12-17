@@ -28,15 +28,9 @@ func (m model) View() string {
 
 	help := m.HelpNotes()
 
-	logTitle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#ffffff")).
-		Render(" Logs ")
-
 	return fmt.Sprintf(
-		"%s\n\n%s\n%s\n%s",
+		"%s\n%s\n%s",
 		title.Render(),
-		logTitle,
 		m.viewport.View(),
 		help,
 	)

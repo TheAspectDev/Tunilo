@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/TheAspectDev/tunio/internal/client"
@@ -26,15 +29,43 @@ var localClient = &http.Client{
 	},
 }
 
+func dialControlServer(controlAddr, domain string, insecure bool) (net.Conn, error) {
+	if insecure {
+		plainConn, err := net.Dial("tcp", controlAddr)
+		if err != nil {
+			return nil, fmt.Errorf("plain dial failed: %w", err)
+		}
+		return plainConn, nil
+	} else {
+		tlsConn, err := tls.Dial("tcp", controlAddr, &tls.Config{
+			MinVersion: tls.VersionTLS13,
+			ServerName: domain,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("tls dial failed(use -insecure if the server is not using tls): %w", err)
+		}
+		return tlsConn, nil
+	}
+}
+
 // Note: concurrency caused extra overhead and increased latency, so ;D no concurrency
 func main() {
 	pass := flag.String("password", "12345", "Authentication password")
 	controlAddr := flag.String("control", "127.0.0.1:9090", "control server address")
 	forrwardAddr := flag.String("forward", "http://localhost:8999", "local forward address")
 	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
-	flag.Parse()
+	insecure := flag.Bool("insecure", false, "is the server using tls")
 
-	conn, err := net.Dial("tcp", *controlAddr)
+	flag.Parse()
+	domain := strings.Split(*controlAddr, ":")[0]
+
+	conn, err := dialControlServer(*controlAddr, domain, *insecure)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	protocol.EnableTCPKeepalive(conn)
 	session := client.NewSession(conn, localClient, *forrwardAddr)
 
@@ -44,10 +75,6 @@ func main() {
 		session.Logger = tui.UILogger{}
 	}
 
-	if err != nil {
-		session.Logger.Logf("error while connecting to ", *controlAddr)
-		return
-	}
 	defer conn.Close()
 
 	if err := session.Authenticate(*pass); err != nil {

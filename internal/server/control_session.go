@@ -3,7 +3,6 @@ package server
 import (
 	"bufio"
 	"errors"
-	"log"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -43,7 +42,6 @@ func (s *ControlSession) Run() {
 	for {
 		msg, err := protocol.Read(reader)
 		if err != nil {
-			log.Printf("control session closed: %v", err)
 			return
 		}
 

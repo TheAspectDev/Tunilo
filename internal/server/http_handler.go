@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -23,7 +22,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.Write(&RequestBuffer); err != nil {
-		log.Printf("Failed to serialize HTTP request: %v", err)
 		http.Error(w, "Failed to encode request", http.StatusInternalServerError)
 		return
 	}
@@ -45,7 +43,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	response, err := http.ReadResponse(reader, r)
 
 	if err != nil {
-		log.Printf("error parsing response %v", err)
 		return
 	}
 
@@ -55,7 +52,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(w, response.Body)
 
 	if err != nil {
-		log.Printf("Error streaming response body: %v", err)
 		return
 	}
 }

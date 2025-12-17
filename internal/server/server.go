@@ -89,16 +89,18 @@ func (srv *Server) getAnySession() *ControlSession {
 	return nil
 }
 
+// ListenAndServeTLS must be done through reverse-proxies like nginx/...
+// the tls is only used for secure connection through the tunnel
 func (srv *Server) StartPublicServer(httpServer *http.Server) {
-	if srv.tls == nil {
-		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server failed: %v", err)
-			return
-		}
-	} else {
-		if err := httpServer.ListenAndServeTLS(srv.tls.Cert, srv.tls.Key); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server failed: %v", err)
-			return
-		}
+	// if srv.tls == nil {
+	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("HTTP server failed: %v", err)
+		return
 	}
+	// } else {
+	// 	if err := httpServer.ListenAndServeTLS(srv.tls.Cert, srv.tls.Key); err != http.ErrServerClosed {
+	// 		log.Fatalf("HTTP server failed: %v", err)
+	// 		return
+	// 	}
+	// }
 }

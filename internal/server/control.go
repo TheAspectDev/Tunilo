@@ -3,6 +3,7 @@ package server
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -11,7 +12,26 @@ import (
 )
 
 func (srv *Server) StartControlServer() {
-	ln, err := net.Listen("tcp", srv.ControlAddress)
+	var (
+		ln  net.Listener
+		err error
+	)
+
+	if srv.tls != nil {
+		pair, err := tls.LoadX509KeyPair(srv.tls.Cert, srv.tls.Key)
+		if err != nil {
+			log.Fatalf("Failed to load keypair: %v", err)
+		}
+
+		cfg := &tls.Config{
+			MinVersion:   tls.VersionTLS13,
+			Certificates: []tls.Certificate{pair},
+		}
+
+		ln, err = tls.Listen("tcp", srv.ControlAddress, cfg)
+	} else {
+		ln, err = net.Listen("tcp", srv.ControlAddress)
+	}
 
 	if err != nil {
 		log.Fatalf("Failed to start control server: %v", err)
