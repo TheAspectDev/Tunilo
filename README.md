@@ -1,17 +1,13 @@
-## 📡 Tunilo — Simple, Extremely Fast Reverse Tunnel for Exposing Local Services
 
-Tunio is a lightweight **Reverse Tunnel** that lets you expose a local HTTP service to the public internet through a TCP control channel.
-
+## 📡 Tunilo — Simple, Extremely Fast Reverse HTTP Tunnel for Exposing Local Services
 It works similarly to ngrok, cloudflare tunnel, and localtunnel, but is intentionally minimal and easy to extend, the difference this project makes besides minimalism is that the public facing server is yours, basically making it a **self-hosted reverse-tunnel**.
-
-
-<center>
-<img width="500px" src="./assets/thumbnail.png">
-</center>
-
 
 > [!IMPORTANT]
 > This project is only for personal usage and might contain unstable behaviour, please do not use it in a production environment.
+
+
+<img width="750px" src="./assets/thumbnail.png">
+
 
 
 ## Usage
@@ -26,7 +22,8 @@ Tunilo supports both TLS and insecure connections, here's a step by step guide a
                        --control 0.0.0.0:9090 \
                        --public 0.0.0.0:4311
 ```
-- ``-public``: the address that your users are going to request to reach your own http server
+> [!NOTE]
+> ``-public``: the address that your users are going to request to reach your own http server
 
 ----------------
 ### TLS
@@ -56,10 +53,15 @@ Start the server using:
                        --control remote-server-address:9090 \
                        --forward localhost:8080
 ```
-- ``-forward``: the address owned by your own HTTP server ( backend, blog, personal project,... )
-- ``-control``: is the your remote-server-address:control-port which is provided by the flags set in server binary
+
+> [!NOTE]
+> - ``-forward``: the address owned by your own HTTP server ( backend, blog, personal project,... )
+> - ``-control``: is the your remote-server-address:control-port which is provided by the flags set in server binary
 
 4. Enjoy ✌️
+
+> [!WARNING]
+> Please make sure you are using the secure TLS version if you are using an untrusted network.
 
 
 ## Tunilo Protocol
