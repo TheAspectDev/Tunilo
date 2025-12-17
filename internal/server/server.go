@@ -1,8 +1,14 @@
 package server
 
 import (
+	"errors"
 	"sync"
 )
+
+type TLSConfig struct {
+	Cert string
+	Key  string
+}
 
 type Server struct {
 	ServerAddress  string
@@ -11,15 +17,61 @@ type Server struct {
 
 	SessionsMu sync.RWMutex
 	Sessions   map[string]*ControlSession
+
+	tls *TLSConfig
 }
 
-func NewServer(serverAddress string, controlAddress string, password string) *Server {
-	return &Server{
-		ServerAddress:  serverAddress,
-		ControlAddress: controlAddress,
-		Sessions:       make(map[string]*ControlSession),
-		password:       password,
+type ServerConfig struct {
+	serverAddress  string
+	password       string
+	controlAddress string
+	tls            *TLSConfig
+}
+
+func NewServerBuilder() *ServerConfig {
+	return &ServerConfig{}
+}
+
+func (b *ServerConfig) SetAddress(address string) *ServerConfig {
+	b.serverAddress = address
+	return b
+}
+
+func (b *ServerConfig) SetPassword(password string) *ServerConfig {
+	b.password = password
+	return b
+}
+
+func (b *ServerConfig) SetControlAddress(address string) *ServerConfig {
+	b.controlAddress = address
+	return b
+}
+
+func (b *ServerConfig) SetTLS(config TLSConfig) *ServerConfig {
+	b.tls = &TLSConfig{Cert: config.Cert, Key: config.Key}
+	return b
+}
+
+func (b *ServerConfig) Build() (*Server, error) {
+	if b.serverAddress == "" {
+		return nil, errors.New("server address required")
 	}
+
+	if b.controlAddress == "" {
+		return nil, errors.New("control address required")
+	}
+
+	if b.tls != nil && (b.tls.Cert == "" || b.tls.Key == "") {
+		return nil, errors.New("TLS enabled but cert or key missing")
+	}
+
+	return &Server{
+		ServerAddress:  b.serverAddress,
+		ControlAddress: b.controlAddress,
+		password:       b.password,
+		tls:            b.tls,
+		Sessions:       make(map[string]*ControlSession),
+	}, nil
 }
 
 // picks the first server

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -22,15 +23,38 @@ func main() {
 	controlAddr := flag.String("control", "0.0.0.0:9090", "control server address")
 	publicAddr := flag.String("public", "0.0.0.0:4311", "public server address")
 	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
+	insecure := flag.Bool("insecure", false, "do you want to disable tls?")
+	cert := flag.String("cert", "", "tls cert")
+	key := flag.String("key", "", "tls key")
 
 	flag.Parse()
 
-	srv := server.NewServer(*publicAddr, *controlAddr, *pass)
-	go srv.StartControlServer()
+	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
+	if !*insecure {
+		httpServer.TLSConfig.MinVersion = tls.VersionTLS12
+	}
+
+	srvBuilder := server.NewServerBuilder().
+		SetAddress(*publicAddr).
+		SetControlAddress(*controlAddr).SetPassword(*pass)
+
+	if !*insecure {
+		srvBuilder = srvBuilder.SetTLS(server.TLSConfig{
+			Cert: *cert,
+			Key:  *key,
+		})
+	}
+
+	srv, err := srvBuilder.Build()
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	http.HandleFunc("/", srv.HandleHTTP)
 
-	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
+	go srv.StartControlServer()
 
 	if *noTui {
 

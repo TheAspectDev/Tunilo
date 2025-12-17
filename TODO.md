@@ -3,6 +3,10 @@
 This document tracks planned improvements and features for the project,
 grouped by expected implementation timeframe.
 
+## High priority
+
+- **Add ping/pong**
+
 ### Short-Term (Improvements)
 
 - **Refactor client architecture** 
