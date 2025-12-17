@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -28,8 +29,6 @@ func main() {
 
 	flag.Parse()
 
-	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
-
 	srvBuilder := server.NewServerBuilder().
 		SetAddress(*publicAddr).
 		SetControlAddress(*controlAddr).SetPassword(*pass)
@@ -43,6 +42,14 @@ func main() {
 
 	srv, err := srvBuilder.Build()
 
+	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
+
+	if !*insecure {
+		httpServer.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -53,13 +60,8 @@ func main() {
 	go srv.StartControlServer()
 
 	if *noTui {
-
-		go func() {
-			log.Printf("Starting serveron %s", *publicAddr)
-			if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-				log.Fatalf("HTTP server failed: %v", err)
-			}
-		}()
+		log.Printf("Starting serveron %s", *publicAddr)
+		go srv.StartPublicServer(httpServer)
 
 		quit := make(chan os.Signal, 1)
 
@@ -75,11 +77,7 @@ func main() {
 		}
 
 	} else {
-		go func() {
-			if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-				log.Panicf("HTTP server failed: %v", err)
-			}
-		}()
+		go srv.StartPublicServer(httpServer)
 
 		lipgloss.DefaultRenderer().Output().ClearScreen()
 

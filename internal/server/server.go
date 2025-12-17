@@ -2,6 +2,8 @@ package server
 
 import (
 	"errors"
+	"log"
+	"net/http"
 	"sync"
 )
 
@@ -62,7 +64,7 @@ func (b *ServerConfig) Build() (*Server, error) {
 	}
 
 	if b.tls != nil && (b.tls.Cert == "" || b.tls.Key == "") {
-		return nil, errors.New("TLS enabled but cert or key missing")
+		return nil, errors.New("cert or key missing, use -insecure flag to run without tls")
 	}
 
 	return &Server{
@@ -85,4 +87,18 @@ func (srv *Server) getAnySession() *ControlSession {
 		return s
 	}
 	return nil
+}
+
+func (srv *Server) StartPublicServer(httpServer *http.Server) {
+	if srv.tls == nil {
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("HTTP server failed: %v", err)
+			return
+		}
+	} else {
+		if err := httpServer.ListenAndServeTLS(srv.tls.Cert, srv.tls.Key); err != http.ErrServerClosed {
+			log.Fatalf("HTTP server failed: %v", err)
+			return
+		}
+	}
 }

@@ -15,6 +15,7 @@ func (srv *Server) StartControlServer() {
 
 	if err != nil {
 		log.Fatalf("Failed to start control server: %v", err)
+		return
 	}
 
 	for {
