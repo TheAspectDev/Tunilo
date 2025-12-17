@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -30,9 +29,6 @@ func main() {
 	flag.Parse()
 
 	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
-	if !*insecure {
-		httpServer.TLSConfig.MinVersion = tls.VersionTLS12
-	}
 
 	srvBuilder := server.NewServerBuilder().
 		SetAddress(*publicAddr).
