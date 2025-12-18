@@ -1,5 +1,9 @@
 
 ## 📡 Tunilo — Simple, Extremely Fast Reverse HTTP Tunnel for Exposing Local Services
+  
+
+Tunio is a lightweight **Reverse Tunnel** that lets you expose a local HTTP service to the public internet through a TCP control channel.
+
 It works similarly to ngrok, cloudflare tunnel, and localtunnel, but is intentionally minimal and easy to extend, the difference this project makes besides minimalism is that the public facing server is yours, basically making it a **self-hosted reverse-tunnel**.
 
 > [!IMPORTANT]
@@ -63,6 +67,27 @@ Start the server using:
 > [!WARNING]
 > Please make sure you are using the secure TLS version if you are using an untrusted network.
 
+## Flags 
+### Server Flags:
+| Flag     	        | Default Value 	    | Description                                                                  	|
+|-------------------|-----------------------|------------------------------------------------------------------------------	|
+| ``-control``  	| ``0.0.0.0:9090``  	| Address the control server listens on (host:port)                            	|
+| ``-public``   	| ``0.0.0.0:4311``  	| Address the public server listens on (host:port)                             	|
+| ``-insecure`` 	| ``false``         	| Disable TLS and allow insecure connections                                   	|
+| ``-cert``     	| `` ``             	| Path to the TLS certificate file (required when TLS is enabled)              	|
+| ``-key``      	| `` ``              	| Path to the TLS private key file (required when TLS is enabled)              	|
+| ``-password`` 	| ``12345``         	| Password used for client authentication                                      	|
+| ``-notui``    	| ``false``         	| Disable the interactive TUI (useful for automation or headless environments) 	|
+
+
+### Client Flags:
+| Flag         	| Default Value    	| Description                                                                  	|
+|--------------	|------------------	|------------------------------------------------------------------------------	|
+| ``control``  	| ``0.0.0.0:9090`` 	| Password used to authenticate with the control server                        	|
+| ``forward``  	| ``0.0.0.0:8999`` 	| Local address to forward traffic to                                          	|
+| ``insecure`` 	| ``false``        	| Connect to the server without TLS                                            	|
+| ``password`` 	| ``12345``        	| Password used for client authentication                                      	|
+| ``notui``    	| ``false``        	| Disable the interactive TUI (useful for automation or headless environments) 	|
 
 ## Tunilo Protocol
 You can read more about the protocol at [Protocol](/internal/protocol/protocol.md)
