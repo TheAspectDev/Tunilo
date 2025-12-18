@@ -1,7 +1,6 @@
 
 ## 📡 Tunilo — Simple, Extremely Fast Reverse HTTP Tunnel for Exposing Local Services
   
-
 Tunio is a lightweight **Reverse Tunnel** that lets you expose a local HTTP service to the public internet through a TCP control channel.
 
 It works similarly to ngrok, cloudflare tunnel, and localtunnel, but is intentionally minimal and easy to extend, the difference this project makes besides minimalism is that the public facing server is yours, basically making it a **self-hosted reverse-tunnel**.
@@ -90,7 +89,7 @@ Start the server using:
 | ``--notui``    	| ``false``        	| Disable the interactive TUI (useful for automation or headless environments) 	|
 
 ## Tunilo Protocol
-You can read more about the protocol at [Protocol](/internal/protocol/protocol.md)
+You can read more in [protocol.md](/protocol.md)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first
