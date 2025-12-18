@@ -22,7 +22,7 @@ Tunilo supports both TLS and insecure connections, here's a step by step guide a
 1. Download the latest binaries for your operating system from the [Releases]()
 
 
-2. Once downloaded, if openning the file is not permitted use ``chmod +x ./tunilo-server-binary`` and open the tunilo-server binary at your public server
+2. Once downloaded, run ``chmod +x ./tunilo-server-binary`` and run the tunilo-server at your public server
 ```python
 ./tunilo-server-binary --insecure --password 12345 \
                        --control 0.0.0.0:9090 \
