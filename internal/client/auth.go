@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/protocol"
 )
 
 func (session *Session) Authenticate(password string) error {

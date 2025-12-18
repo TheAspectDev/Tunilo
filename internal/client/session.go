@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TheAspectDev/tunio/internal/logging"
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/logging"
+	"github.com/TheAspectDev/tunio/protocol"
 )
 
 type Session struct {

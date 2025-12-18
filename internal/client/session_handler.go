@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/protocol"
 )
 
 func (s *Session) handleControlMessage() error {

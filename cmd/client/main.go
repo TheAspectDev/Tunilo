@@ -13,8 +13,8 @@ import (
 
 	"github.com/TheAspectDev/tunio/internal/client"
 	"github.com/TheAspectDev/tunio/internal/client/tui"
-	"github.com/TheAspectDev/tunio/internal/logging"
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/logging"
+	"github.com/TheAspectDev/tunio/protocol"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )

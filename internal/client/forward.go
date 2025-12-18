@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/protocol"
 )
 
 func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {

@@ -3,7 +3,7 @@ package tui
 import (
 	"sort"
 
-	"github.com/TheAspectDev/tunio/internal/tui"
+	"github.com/TheAspectDev/tunio/tui"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 )

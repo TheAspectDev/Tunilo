@@ -8,7 +8,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/TheAspectDev/tunio/internal/protocol"
+	"github.com/TheAspectDev/tunio/protocol"
 )
 
 func (srv *Server) StartControlServer() {
