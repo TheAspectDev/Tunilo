@@ -27,7 +27,7 @@ Tunilo supports both TLS and insecure connections, here's a step by step guide a
                        --public 0.0.0.0:4311
 ```
 > [!NOTE]
-> ``-public``: the address that your users are going to request to reach your own http server
+> ``--public``: the address that your users are going to request to reach your own http server
 
 ----------------
 ### TLS
@@ -59,8 +59,8 @@ Start the server using:
 ```
 
 > [!NOTE]
-> - ``-forward``: the address owned by your own HTTP server ( backend, blog, personal project,... )
-> - ``-control``: is the your remote-server-address:control-port which is provided by the flags set in server binary
+> - ``--forward``: the address owned by your own HTTP server ( backend, blog, personal project,... )
+> - ``--control``: is the your remote-server-address:control-port which is provided by the flags set in server binary
 
 4. Enjoy ✌️
 
@@ -71,23 +71,23 @@ Start the server using:
 ### Server Flags:
 | Flag     	        | Default Value 	    | Description                                                                  	|
 |-------------------|-----------------------|------------------------------------------------------------------------------	|
-| ``-control``  	| ``0.0.0.0:9090``  	| Address the control server listens on (host:port)                            	|
-| ``-public``   	| ``0.0.0.0:4311``  	| Address the public server listens on (host:port)                             	|
-| ``-insecure`` 	| ``false``         	| Disable TLS and allow insecure connections                                   	|
-| ``-cert``     	| `` ``             	| Path to the TLS certificate file (required when TLS is enabled)              	|
-| ``-key``      	| `` ``              	| Path to the TLS private key file (required when TLS is enabled)              	|
-| ``-password`` 	| ``12345``         	| Password used for client authentication                                      	|
-| ``-notui``    	| ``false``         	| Disable the interactive TUI (useful for automation or headless environments) 	|
+| ``--control``  	| ``0.0.0.0:9090``  	| Address the control server listens on (host:port)                            	|
+| ``--public``   	| ``0.0.0.0:4311``  	| Address the public server listens on (host:port)                             	|
+| ``--insecure`` 	| ``false``         	| Disable TLS and allow insecure connections                                   	|
+| ``--cert``     	| `` ``             	| Path to the TLS certificate file (required when TLS is enabled)              	|
+| ``--key``      	| `` ``              	| Path to the TLS private key file (required when TLS is enabled)              	|
+| ``--password`` 	| ``12345``         	| Password used for client authentication                                      	|
+| ``--notui``    	| ``false``         	| Disable the interactive TUI (useful for automation or headless environments) 	|
 
 
 ### Client Flags:
 | Flag         	| Default Value    	| Description                                                                  	|
 |--------------	|------------------	|------------------------------------------------------------------------------	|
-| ``control``  	| ``0.0.0.0:9090`` 	| Password used to authenticate with the control server                        	|
-| ``forward``  	| ``0.0.0.0:8999`` 	| Local address to forward traffic to                                          	|
-| ``insecure`` 	| ``false``        	| Connect to the server without TLS                                            	|
-| ``password`` 	| ``12345``        	| Password used for client authentication                                      	|
-| ``notui``    	| ``false``        	| Disable the interactive TUI (useful for automation or headless environments) 	|
+| ``--control``  	| ``0.0.0.0:9090`` 	| Password used to authenticate with the control server                        	|
+| ``--forward``  	| ``0.0.0.0:8999`` 	| Local address to forward traffic to                                          	|
+| ``--insecure`` 	| ``false``        	| Connect to the server without TLS                                            	|
+| ``--password`` 	| ``12345``        	| Password used for client authentication                                      	|
+| ``--notui``    	| ``false``        	| Disable the interactive TUI (useful for automation or headless environments) 	|
 
 ## Tunilo Protocol
 You can read more about the protocol at [Protocol](/internal/protocol/protocol.md)
