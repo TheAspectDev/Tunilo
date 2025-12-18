@@ -19,19 +19,53 @@ import (
 )
 
 func main() {
-	pass := flag.String("password", "12345", "Authentication password")
-	controlAddr := flag.String("control", "0.0.0.0:9090", "control server address")
-	publicAddr := flag.String("public", "0.0.0.0:4311", "public server address")
-	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
-	insecure := flag.Bool("insecure", false, "do you want to disable tls?")
-	cert := flag.String("cert", "", "tls cert")
-	key := flag.String("key", "", "tls key")
+	pass := flag.String(
+		"password",
+		"12345",
+		"Password used for client authentication",
+	)
+
+	controlAddress := flag.String(
+		"control",
+		"0.0.0.0:9090",
+		"Address the control server listens on (host:port)",
+	)
+
+	publicAddress := flag.String(
+		"public",
+		"0.0.0.0:4311",
+		"Address the public server listens on (host:port)",
+	)
+
+	noTui := flag.Bool(
+		"notui",
+		false,
+		"Disable the interactive TUI (useful for automation or headless environments)",
+	)
+
+	insecure := flag.Bool(
+		"insecure",
+		false,
+		"Disable TLS and allow insecure connections",
+	)
+
+	cert := flag.String(
+		"cert",
+		"",
+		"Path to the TLS certificate file (required when TLS is enabled)",
+	)
+
+	key := flag.String(
+		"key",
+		"",
+		"Path to the TLS private key file (required when TLS is enabled)",
+	)
 
 	flag.Parse()
 
 	srvBuilder := server.NewServerBuilder().
-		SetAddress(*publicAddr).
-		SetControlAddress(*controlAddr).SetPassword(*pass)
+		SetAddress(*publicAddress).
+		SetControlAddress(*controlAddress).SetPassword(*pass)
 
 	if !*insecure {
 		srvBuilder = srvBuilder.SetTLS(server.TLSConfig{
@@ -42,7 +76,7 @@ func main() {
 
 	srv, err := srvBuilder.Build()
 
-	httpServer := &http.Server{Addr: *publicAddr, Handler: nil}
+	httpServer := &http.Server{Addr: *publicAddress, Handler: nil}
 
 	if !*insecure {
 		httpServer.TLSConfig = &tls.Config{
@@ -60,7 +94,7 @@ func main() {
 	go srv.StartControlServer()
 
 	if *noTui {
-		log.Printf("Starting serveron %s", *publicAddr)
+		log.Printf("Starting serveron %s", *publicAddress)
 		go srv.StartPublicServer(httpServer)
 
 		quit := make(chan os.Signal, 1)

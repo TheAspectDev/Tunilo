@@ -29,15 +29,15 @@ var localClient = &http.Client{
 	},
 }
 
-func dialControlServer(controlAddr, domain string, insecure bool) (net.Conn, error) {
+func dialControlServer(controlAddress, domain string, insecure bool) (net.Conn, error) {
 	if insecure {
-		plainConn, err := net.Dial("tcp", controlAddr)
+		plainConn, err := net.Dial("tcp", controlAddress)
 		if err != nil {
 			return nil, fmt.Errorf("plain dial failed: %w", err)
 		}
 		return plainConn, nil
 	} else {
-		tlsConn, err := tls.Dial("tcp", controlAddr, &tls.Config{
+		tlsConn, err := tls.Dial("tcp", controlAddress, &tls.Config{
 			MinVersion: tls.VersionTLS13,
 			ServerName: domain,
 		})
@@ -50,16 +50,40 @@ func dialControlServer(controlAddr, domain string, insecure bool) (net.Conn, err
 
 // Note: concurrency caused extra overhead and increased latency, so ;D no concurrency
 func main() {
-	pass := flag.String("password", "12345", "Authentication password")
-	controlAddr := flag.String("control", "127.0.0.1:9090", "control server address")
-	forrwardAddr := flag.String("forward", "http://localhost:8999", "local forward address")
-	noTui := flag.Bool("notui", false, "is tui used? ( false for automation/simplicity )")
-	insecure := flag.Bool("insecure", false, "is the server using tls")
+	pass := flag.String(
+		"password",
+		"12345",
+		"Password used to authenticate with the control server",
+	)
+
+	controlAddress := flag.String(
+		"control",
+		"127.0.0.1:9090",
+		"Control server address to connect to (host:port)",
+	)
+
+	forwardAddress := flag.String(
+		"forward",
+		"http://localhost:8999",
+		"Local address to forward traffic to",
+	)
+
+	noTui := flag.Bool(
+		"notui",
+		false,
+		"Disable the interactive TUI (useful for automation or headless environments)",
+	)
+
+	insecure := flag.Bool(
+		"insecure",
+		false,
+		"Connect to the server without TLS",
+	)
 
 	flag.Parse()
-	domain := strings.Split(*controlAddr, ":")[0]
+	domain := strings.Split(*controlAddress, ":")[0]
 
-	conn, err := dialControlServer(*controlAddr, domain, *insecure)
+	conn, err := dialControlServer(*controlAddress, domain, *insecure)
 
 	if err != nil {
 		fmt.Println(err)
@@ -67,7 +91,7 @@ func main() {
 	}
 
 	protocol.EnableTCPKeepalive(conn)
-	session := client.NewSession(conn, localClient, *forrwardAddr)
+	session := client.NewSession(conn, localClient, *forwardAddress)
 
 	if *noTui {
 		session.Logger = logging.StdoutLogger{}
