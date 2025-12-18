@@ -3,15 +3,14 @@ package protocol
 type MsgType byte
 
 const (
-	MsgReady MsgType = 1
+	MsgReady MsgType = iota
+	MsgPing
+	MsgPong
 
-	MsgPing MsgType = 2
-	MsgPong MsgType = 3
+	MsgError
 
-	MsgError MsgType = 4
-
-	MsgRequest  MsgType = 6
-	MsgResponse MsgType = 7
+	MsgRequest
+	MsgResponse
 )
 
 type Message struct {
