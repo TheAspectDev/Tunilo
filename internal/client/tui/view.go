@@ -7,8 +7,8 @@ import (
 )
 
 func (m model) HelpNotes() string {
-	var keyNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#338f8cff"))
-	var valNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#5f5f5fff"))
+	keyNote := lipgloss.NewStyle().Foreground(lipgloss.Color("#338f8cff"))
+	valNote := lipgloss.NewStyle().Foreground(lipgloss.Color("#5f5f5fff"))
 
 	return (keyNote.Render("↑/k") + " 	" + valNote.Render("scroll up")) + "			" + (keyNote.Render("q/esc") + " " + valNote.Render("kill connection")) + "\n" +
 		(keyNote.Render("↓/j") + "     " + valNote.Render("scroll down")) + "\n"

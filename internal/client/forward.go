@@ -21,7 +21,6 @@ func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {
 	req.RequestURI = ""
 
 	localResp, err := session.localClient.Do(req)
-
 	if err != nil {
 		session.Logger.Errorf(err, "Error forwarding request to local app: ")
 		protocol.Write(session.controlConn, protocol.Message{
@@ -45,5 +44,4 @@ func (session *Session) ForwardRequest(req *http.Request, req_id uint64) {
 		RequestID: req_id,
 		Payload:   RequestBuffer.Bytes(),
 	})
-
 }

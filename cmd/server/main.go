@@ -129,5 +129,4 @@ func main() {
 			log.Fatalf("Server forced to shutdown: %v", err)
 		}
 	}
-
 }

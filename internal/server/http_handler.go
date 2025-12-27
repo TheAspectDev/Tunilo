@@ -41,7 +41,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	reader := bufio.NewReader(bytes.NewReader(payload))
 	response, err := http.ReadResponse(reader, r)
-
 	if err != nil {
 		return
 	}
@@ -50,7 +49,6 @@ func (srv *Server) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(response.StatusCode)
 
 	_, err = io.Copy(w, response.Body)
-
 	if err != nil {
 		return
 	}

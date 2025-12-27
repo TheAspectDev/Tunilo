@@ -7,13 +7,12 @@ import (
 )
 
 func (m model) HelpNotes() string {
-	var keyNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#338f8cff"))
-	var valNote = lipgloss.NewStyle().Foreground(lipgloss.Color("#5f5f5fff"))
+	keyNote := lipgloss.NewStyle().Foreground(lipgloss.Color("#338f8cff"))
+	valNote := lipgloss.NewStyle().Foreground(lipgloss.Color("#5f5f5fff"))
 
 	return (keyNote.Render("↑/k") + " 	" + valNote.Render("move up")) + "			" + (keyNote.Render("q/esc") + " " + valNote.Render("kill tunnel")) + "\n" +
 		(keyNote.Render("↓/j") + "     " + valNote.Render("move down")) + "\n" +
 		(keyNote.Render("delete") + "  " + valNote.Render("close connection")) + "\n"
-
 }
 
 func (m model) View() string {
@@ -21,7 +20,7 @@ func (m model) View() string {
 		return m.err.Error()
 	}
 
-	var title = lipgloss.NewStyle().
+	title := lipgloss.NewStyle().
 		SetString("  Tunilo Tunnel - SERVER").
 		Width(1000).
 		Height(1).

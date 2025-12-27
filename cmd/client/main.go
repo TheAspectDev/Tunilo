@@ -84,7 +84,6 @@ func main() {
 	domain := strings.Split(*controlAddress, ":")[0]
 
 	conn, err := dialControlServer(*controlAddress, domain, *insecure)
-
 	if err != nil {
 		fmt.Println(err)
 		return

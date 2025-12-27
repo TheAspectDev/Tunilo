@@ -79,7 +79,6 @@ func (srv *Server) handleNewClient(conn net.Conn) {
 func (srv *Server) waitForClientReady(conn net.Conn) error {
 	reader := bufio.NewReader(conn)
 	msg, err := protocol.Read(reader)
-
 	if err != nil {
 		return fmt.Errorf("failed to read READY: %w", err)
 	}
