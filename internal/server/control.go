@@ -13,12 +13,13 @@ import (
 
 func (srv *Server) StartControlServer() {
 	var (
-		ln  net.Listener
-		err error
+		ln   net.Listener
+		err  error
+		pair tls.Certificate
 	)
 
 	if srv.tls != nil {
-		pair, err := tls.LoadX509KeyPair(srv.tls.Cert, srv.tls.Key)
+		pair, err = tls.LoadX509KeyPair(srv.tls.Cert, srv.tls.Key)
 		if err != nil {
 			log.Fatalf("Failed to load keypair: %v", err)
 		}
@@ -83,7 +84,7 @@ func (srv *Server) waitForClientReady(conn net.Conn) error {
 		return fmt.Errorf("failed to read READY: %w", err)
 	}
 
-	if !(msg.Type == protocol.MsgReady) {
+	if msg.Type != protocol.MsgReady {
 		return fmt.Errorf("unexpected READY value: %q", msg.Type)
 	}
 

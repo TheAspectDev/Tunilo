@@ -41,5 +41,8 @@ func main() {
 		})
 	})
 
-	r.Run("localhost:8999")
+	err := r.Run("localhost:8999")
+	if err != nil {
+		return
+	}
 }

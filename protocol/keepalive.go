@@ -10,7 +10,8 @@ func EnableTCPKeepalive(conn net.Conn) {
 	if !ok {
 		return
 	}
-	tcp.SetKeepAlive(true)
-	tcp.SetKeepAlivePeriod(10 * time.Second)
-	tcp.SetNoDelay(true)
+	_ = tcp.SetKeepAlive(true)
+	_ = tcp.SetKeepAlivePeriod(10 * time.Second)
+	_ = tcp.SetNoDelay(true)
+
 }
